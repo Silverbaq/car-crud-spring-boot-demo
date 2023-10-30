@@ -47,32 +47,32 @@ class CarControllerTest {
         mvc.perform(MockMvcRequestBuilders.get("/api/v1/cars").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(carsList.size()))
-                .andExpect(jsonPath("$[0].vin").value(car1.vin()))
-                .andExpect(jsonPath("$[1].vin").value(car2.vin()))
-                .andExpect(jsonPath("$[2].vin").value(car3.vin()));
+                .andExpect(jsonPath("$[0].vin").value(car1.getVin()))
+                .andExpect(jsonPath("$[1].vin").value(car2.getVin()))
+                .andExpect(jsonPath("$[2].vin").value(car3.getVin()));
     }
 
     @Test
     void getCar_carWithVinIsAvailable_carWithVinIsReturned() throws Exception {
-        when(carService.getCar(car1.vin())).thenReturn(Optional.ofNullable(car1));
+        when(carService.getCar(car1.getVin())).thenReturn(Optional.ofNullable(car1));
 
-        mvc.perform(MockMvcRequestBuilders.get("/api/v1/cars/".concat(car1.vin())).accept(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.get("/api/v1/cars/".concat(car1.getVin())).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.vin").value(car1.vin()))
-                .andExpect(jsonPath("$.make").value(car1.make()))
-                .andExpect(jsonPath("$.model").value(car1.model()))
-                .andExpect(jsonPath("$.mileage").value(car1.mileage()))
-                .andExpect(jsonPath("$.year").value(car1.year()))
-                .andExpect(jsonPath("$.color").value(car1.color()))
-                .andExpect(jsonPath("$.createdAt").value(car1.createdAt()))
-                .andExpect(jsonPath("$.updatedAt").value(car1.updatedAt()));
+                .andExpect(jsonPath("$.vin").value(car1.getVin()))
+                .andExpect(jsonPath("$.make").value(car1.getMake()))
+                .andExpect(jsonPath("$.model").value(car1.getModel()))
+                .andExpect(jsonPath("$.mileage").value(car1.getMileage()))
+                .andExpect(jsonPath("$.year").value(car1.getYear()))
+                .andExpect(jsonPath("$.color").value(car1.getColor()))
+                .andExpect(jsonPath("$.createdAt").value(car1.getCreatedAt()))
+                .andExpect(jsonPath("$.updatedAt").value(car1.getUpdatedAt()));
     }
 
     @Test
     void getCar_carWithVinIsNotAvailable_resourceNotFoundExceptionIsThrown() throws Exception {
-        when(carService.getCar(car1.vin())).thenReturn(Optional.empty());
+        when(carService.getCar(car1.getVin())).thenReturn(Optional.empty());
 
-        mvc.perform(MockMvcRequestBuilders.get("/api/v1/cars/".concat(car1.vin())).accept(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.get("/api/v1/cars/".concat(car1.getVin())).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
@@ -100,43 +100,43 @@ class CarControllerTest {
 
     @Test
     void updateCar_validValues_acceptedIsReturned() throws Exception {
-        when(carService.updateCar(car1.vin(), car1)).thenReturn(car1);
+        when(carService.updateCar(car1.getVin(), car1)).thenReturn(car1);
 
-        mvc.perform(MockMvcRequestBuilders.put("/api/v1/cars/".concat(car1.vin())).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders.put("/api/v1/cars/".concat(car1.getVin())).contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car1)))
                 .andExpect(status().isAccepted());
 
-        verify(carService, times(1)).updateCar(car1.vin(), car1);
+        verify(carService, times(1)).updateCar(car1.getVin(), car1);
     }
 
     @Test
     void updateCar_notValidValues_badRequestIsReturned() throws Exception {
-        when(carService.updateCar(car1.vin(), car2)).thenReturn(null);
+        when(carService.updateCar(car1.getVin(), car2)).thenReturn(null);
 
-        mvc.perform(MockMvcRequestBuilders.put("/api/v1/cars/".concat(car1.vin())).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(MockMvcRequestBuilders.put("/api/v1/cars/".concat(car1.getVin())).contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(car2)))
                 .andExpect(status().isBadRequest());
 
-        verify(carService, times(1)).updateCar(car1.vin(), car2);
+        verify(carService, times(1)).updateCar(car1.getVin(), car2);
     }
 
     @Test
     void deleteCar_validValues_OKIsReturned() throws Exception {
-        when(carService.deleteCar(car1.vin())).thenReturn(true);
+        when(carService.deleteCar(car1.getVin())).thenReturn(true);
 
-        mvc.perform(MockMvcRequestBuilders.delete("/api/v1/cars/".concat(car1.vin())).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.delete("/api/v1/cars/".concat(car1.getVin())).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        verify(carService, times(1)).deleteCar(car1.vin());
+        verify(carService, times(1)).deleteCar(car1.getVin());
     }
 
     @Test
     void deleteCar_notValidValues_badRequestIsReturned() throws Exception {
         when(carService.deleteCar(any())).thenReturn(false);
 
-        mvc.perform(MockMvcRequestBuilders.delete("/api/v1/cars/".concat(car1.vin())).contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(MockMvcRequestBuilders.delete("/api/v1/cars/".concat(car1.getVin())).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        verify(carService, times(1)).deleteCar(car1.vin());
+        verify(carService, times(1)).deleteCar(car1.getVin());
     }
 }

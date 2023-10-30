@@ -1,15 +1,32 @@
 package dk.w4.carcrudsprintbootdemo.model;
 
-public record Car(
-        String vin,
-        String make,
-        String model,
-        double mileage,
-        int year,
-        String color,
-        long createdAt,
-        long updatedAt
-) {
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "cars")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Car{
+
+        @Id
+        String vin;
+        String make;
+        String model;
+        double mileage;
+        int year;
+        String color;
+        long createdAt;
+        long updatedAt;
+
+        /*
     public static Car empty() {
         return new Car("", "", "", 0, 0, "", 0, 0);
     }
@@ -20,4 +37,5 @@ public record Car(
     public Car setUpdatedAt(long unixTimeStamp) {
         return new Car(vin, make, model, mileage, year, color, createdAt, unixTimeStamp);
     }
+         */
 }

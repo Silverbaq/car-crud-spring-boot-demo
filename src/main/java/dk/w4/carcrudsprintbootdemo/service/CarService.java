@@ -29,25 +29,36 @@ public class CarService {
     }
 
     public Car addCar(Car value) {
-        if (vinValidator.isValidVIN(value.vin())) {
+        if (vinValidator.isValidVIN(value.getVin())) {
             long currentUnitTimeStamp = System.currentTimeMillis() / 1000;
-            Car car = value.setCreatedAt(currentUnitTimeStamp);
-            if (carRepository.add(car)) return car;
-            else return null;
+            value.setCreatedAt(currentUnitTimeStamp);
+            return carRepository.saveAndFlush(value);
         }
         return null;
     }
 
+
     public Car updateCar(String vin, Car value) {
-        if (!Objects.equals(vin, value.vin())) return null;
+        if (!Objects.equals(vin, value.getVin())) return null;
+
+        Car car = carRepository.findById(vin).orElse(null);
+        if (car == null) return null;
 
         long currentUnitTimeStamp = System.currentTimeMillis() / 1000;
-        Car car = value.setUpdatedAt(currentUnitTimeStamp);
-        if (carRepository.update(vin, car)) return car;
-        else return null;
+        car.setMake(value.getMake());
+        car.setModel(value.getModel());
+        car.setYear(value.getYear());
+        car.setColor(value.getColor());
+        car.setMileage(value.getMileage());
+        car.setUpdatedAt(currentUnitTimeStamp);
+
+        return carRepository.saveAndFlush(car);
     }
 
     public boolean deleteCar(String vin) {
-        return carRepository.delete(vin);
+        Car car = carRepository.findById(vin).orElse(null);
+        if (car == null) return false;
+        carRepository.delete(car);
+        return true;
     }
 }

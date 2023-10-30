@@ -32,18 +32,18 @@ class CarServiceTest {
 
     @Test
     void getCar_carWithVinExists_returnsCar() {
-        when(carRepository.findById(car.vin())).thenReturn(Optional.of(car));
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.of(car));
 
-        Car actual = carService.getCar(car.vin()).orElse(null);
+        Car actual = carService.getCar(car.getVin()).orElse(null);
 
         assertEquals(car, actual);
     }
 
     @Test
     void getCar_carWithVinDoesNotExists_returnsNull() {
-        when(carRepository.findById(car.vin())).thenReturn(Optional.ofNullable(null));
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.ofNullable(null));
 
-        Car actual = carService.getCar(car.vin()).orElse(null);
+        Car actual = carService.getCar(car.getVin()).orElse(null);
 
         assertNull(actual);
     }
@@ -60,125 +60,127 @@ class CarServiceTest {
 
     @Test
     void createCar_validValues_carIsReturned() {
-        when(vinValidator.isValidVIN(car.vin())).thenReturn(true);
-        when(carRepository.add(car)).thenReturn(true);
+        when(vinValidator.isValidVIN(car.getVin())).thenReturn(true);
+        when(carRepository.saveAndFlush(car)).thenReturn(car);
 
         Car actual = carService.addCar(car);
 
         assertEquals(car, actual);
 
-        verify(vinValidator, times(1)).isValidVIN(car.vin());
-        verify(carRepository, times(1)).add(car);
+        verify(vinValidator, times(1)).isValidVIN(car.getVin());
+        verify(carRepository, times(1)).saveAndFlush(car);
     }
 
     @Test
     void createCar_carIsCreated_createdAtValueIsSet() {
         Car car = new Car("WBA3R1C50EK192321", "Toyota", "Corolla", 84320.6922, 1993, "Red", 0L, 0L);
 
-        when(vinValidator.isValidVIN(car.vin())).thenReturn(true);
-        when(carRepository.add(car)).thenReturn(true);
+        when(vinValidator.isValidVIN(car.getVin())).thenReturn(true);
+        when(carRepository.saveAndFlush(car)).thenReturn(car);
 
         Car actual = carService.addCar(car);
 
-        assertNotEquals(car.createdAt(), actual.createdAt());
-        assertNotEquals(car.updatedAt(), actual.updatedAt());
+        assertNotEquals(car.getCreatedAt(), actual.getCreatedAt());
+        assertNotEquals(car.getUpdatedAt(), actual.getUpdatedAt());
 
-        verify(vinValidator, times(1)).isValidVIN(car.vin());
-        verify(carRepository, times(1)).add(car);
+        verify(vinValidator, times(1)).isValidVIN(car.getVin());
+        verify(carRepository, times(1)).saveAndFlush(car);
     }
 
     @Test
     void createCar_invalidVIN_nullIsReturned() {
-        when(vinValidator.isValidVIN(car.vin())).thenReturn(false);
+        when(vinValidator.isValidVIN(car.getVin())).thenReturn(false);
 
         Car actual = carService.addCar(car);
 
         assertNull(actual);
 
-        verify(vinValidator, times(1)).isValidVIN(car.vin());
-        verify(carRepository, times(0)).add(car);
+        verify(vinValidator, times(1)).isValidVIN(car.getVin());
+        verify(carRepository, times(0)).saveAndFlush(car);
     }
 
     @Test
     void createCar_carNotAccepted_nullIsReturned() {
-        when(vinValidator.isValidVIN(car.vin())).thenReturn(true);
-        when(carRepository.add(car)).thenReturn(false);
+        when(vinValidator.isValidVIN(car.getVin())).thenReturn(true);
+        when(carRepository.saveAndFlush(car)).thenReturn(null);
 
         Car actual = carService.addCar(car);
 
         assertNull(actual);
 
-        verify(vinValidator, times(1)).isValidVIN(car.vin());
-        verify(carRepository, times(0)).add(car);
+        verify(vinValidator, times(1)).isValidVIN(car.getVin());
+        verify(carRepository, times(0)).saveAndFlush(car);
     }
+
 
     @Test
     void updateCar_validValues_updatedCarIsReturned() {
-        when(carRepository.update(any(), any())).thenReturn(true);
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.of(car));
+        when(carRepository.saveAndFlush(car)).thenReturn(car);
 
-        var updatedCar = new Car(car.vin(), car.make(), car.model(), car.mileage(), car.year(), "new-color", car.createdAt(), 0L);
-        Car actual = carService.updateCar(car.vin(), updatedCar);
+        var updatedCar = new Car(car.getVin(), car.getMake(), car.getModel(), car.getMileage(), car.getYear(), "new-color", car.getCreatedAt(), 0L);
 
-        assertEquals(updatedCar.color(), actual.color());
+        Car actual = carService.updateCar(car.getVin(), updatedCar);
 
-        verify(carRepository, times(1)).update(car.vin(), actual);
+        assertEquals(updatedCar.getColor(), actual.getColor());
+
+        verify(carRepository, times(1)).saveAndFlush(car);
     }
+
 
     @Test
     void updateCar_carIsUpdated_updatedAtValueIsUpdated() {
-        when(carRepository.update(any(), any())).thenReturn(true);
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.of(car));
+        when(carRepository.saveAndFlush(car)).thenReturn(car);
 
-        Car updatedCar = new Car(car.vin(), car.make(), car.model(), car.mileage(), car.year(), "new-color", car.createdAt(), 0L);
-        Car actual = carService.updateCar(car.vin(), updatedCar);
+        Car updatedCar = new Car(car.getVin(), car.getMake(), car.getModel(), car.getMileage(), car.getYear(), "new-color", car.getCreatedAt(), 0L);
+        Car actual = carService.updateCar(car.getVin(), updatedCar);
 
-        assertNotEquals(updatedCar.updatedAt(), actual.updatedAt());
+        assertNotEquals(updatedCar.getUpdatedAt(), actual.getUpdatedAt());
 
-        verify(carRepository, times(1)).update(car.vin(), actual);
+        verify(carRepository, times(1)).saveAndFlush(car);
     }
 
     @Test
     void updateCar_vinAndCarVinAreNotTheSame_returnedNull() {
         String differentVin = "1ZVFT80N255145737";
-        Car updatedCar = new Car(car.vin(), car.make(), car.model(), car.mileage(), car.year(), "new-color", car.createdAt(), 0L);
+        Car updatedCar = new Car(car.getVin(), car.getMake(), car.getModel(), car.getMileage(), car.getYear(), "new-color", car.getCreatedAt(), 0L);
         Car actual = carService.updateCar(differentVin, updatedCar);
 
         assertNull(actual);
 
-        verify(carRepository, times(0)).update(car.vin(), updatedCar);
+        verify(carRepository, times(0)).saveAndFlush(car);
     }
 
     @Test
-    void updateCar_carIsNotUpdated_returnedNull() {
-        when(carRepository.update(car.vin(), car)).thenReturn(false);
+    void updateCar_carIsDoesNotExist_returnedNull() {
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.ofNullable(null));
 
-        Car updatedCar = new Car(car.vin(), car.make(), car.model(), car.mileage(), car.year(), "new-color", car.createdAt(), 0L);
-        Car actual = carService.updateCar(car.vin(), updatedCar);
+        Car updatedCar = new Car(car.getVin(), car.getMake(), car.getModel(), car.getMileage(), car.getYear(), "new-color", car.getCreatedAt(), 0L);
+        Car actual = carService.updateCar(car.getVin(), updatedCar);
 
         assertNull(actual);
 
-        verify(carRepository, times(0)).update(car.vin(), updatedCar);
+        verify(carRepository, times(0)).saveAndFlush(car);
     }
-
 
     @Test
     void deleteCar_carIsDeleted_returnedTrue() {
-        when(carRepository.delete(car.vin())).thenReturn(true);
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.ofNullable(car));
 
-        boolean actual = carService.deleteCar(car.vin());
+        boolean actual = carService.deleteCar(car.getVin());
 
         assertTrue(actual);
-
-        verify(carRepository, times(1)).delete(car.vin());
+        verify(carRepository, times(1)).delete(car);
     }
 
     @Test
-    void deleteCar_carIsNotDeleted_returnedFalse() {
-        when(carRepository.delete(car.vin())).thenReturn(false);
+    void deleteCar_carDoesNotExist_returnedFalse() {
+        when(carRepository.findById(car.getVin())).thenReturn(Optional.ofNullable(null));
 
-        boolean actual = carService.deleteCar(car.vin());
+        boolean actual = carService.deleteCar(car.getVin());
 
         assertFalse(actual);
-
-        verify(carRepository, times(1)).delete(car.vin());
+        verify(carRepository, times(0)).delete(car);
     }
 }
